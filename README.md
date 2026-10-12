@@ -15,23 +15,36 @@ Each item's subtitle shows where the text came from (`Selection:` or `Clipboard:
 
 ## Setup
 
-1. Store your Anthropic API key in the macOS Keychain (it prompts for the key, so it stays out of your shell history):
+Install the workflow from `releases/`. Alfred strips hotkeys on import, so set one (e.g. ⌃⌥R) on the Hotkey trigger, then pick a backend in *Configure Workflow*.
 
-   ```bash
-   security add-generic-password -a "$USER" -s anthropic-api-key -w
-   ```
+### Backend: Claude subscription (default, no API key)
 
-   If there's no Keychain entry, `ANTHROPIC_API_KEY` or an `ant auth login` profile is used instead.
+Runs your installed Claude Code CLI (`claude -p`) and uses your Claude plan login. Run `claude` once in a terminal and sign in with your Claude account.
 
-2. Install the workflow from `releases/` and set your options in Alfred → Workflows → Claude Rewrite → *Configure Workflow*:
+It runs locked down: `--safe-mode --tools "" --strict-mcp-config --setting-sources "" --no-session-persistence`. So no tools, MCP servers, CLAUDE.md, hooks or saved sessions, and `ANTHROPIC_*` / `AWS_*` / `CLAUDE_CODE_USE_*` variables are removed from its environment. Your own Claude Code setup (e.g. Bedrock in `~/.claude/settings.json`) is never used for rewrites.
 
-   | Option | Default | |
-   |---|---|---|
-   | Keyword | `rw` | |
-   | Model | `claude-opus-5-5` | any Claude model ID |
-   | Effort | Low | higher = slower but more careful |
-   | Paste result | on | off = copy to the clipboard only |
-   | About you | — | e.g. "My name is Marc. Sign off with 'Groet, Marc'. I prefer short mails." |
+### Backend: Anthropic API key
+
+Paste the key in the **API key** field, or leave that empty and store it in the macOS Keychain:
+
+```bash
+security add-generic-password -a "$USER" -s anthropic-api-key -w
+```
+
+The API key field is stored in plain text in your Alfred prefs (`prefs.plist` in the workflow folder). Don't use it if those prefs are synced to a git repo.
+
+### Options
+
+| Option | Default | |
+|---|---|---|
+| Keyword | `rw` | |
+| Backend | Claude subscription | or Anthropic API key |
+| Claude Code path | `~/.local/bin/claude` | subscription only |
+| API key | — | API only, falls back to Keychain |
+| Model | `opus` / `claude-opus-5-5` | subscription accepts aliases (`sonnet`, `haiku`) |
+| Effort | Low | higher = slower but more careful |
+| Paste result | on | off = copy to the clipboard only |
+| About you | — | e.g. "My name is Marc. Sign off with 'Groet, Marc'. I prefer short mails." |
 
 ## Development
 

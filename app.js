@@ -1,9 +1,14 @@
-const { execFileSync } = require('child_process');
+const { execFileSync, spawn } = require('child_process');
+const os = require('os');
 const Anthropic = require('@anthropic-ai/sdk');
 const { buildStyleItems, buildSystemPrompt, buildUserPrompt } = require('./prompts');
 
 const KEYCHAIN_SERVICE = 'anthropic-api-key';
 const DEFAULT_MODEL = 'claude-opus-5-5';
+const DEFAULT_CLI_MODEL = 'opus';
+const DEFAULT_CLAUDE_PATH = '~/.local/bin/claude';
+// Stripped from the Claude Code environment so it signs in with your claude.ai subscription, not an API key or Bedrock.
+const CLI_ENV_BLOCKLIST = /^(ANTHROPIC_|CLAUDE_CODE_USE_|AWS_)/;
 // Models that accept the server-side `fallbacks: "default"` refusal fallback.
 const FALLBACK_MODELS = ['claude-fable-5-1', 'claude-opus-5-5', 'claude-opus-5', 'claude-sonnet-5-5'];
 
@@ -18,8 +23,11 @@ function readInput() {
     }
 }
 
-// API key: macOS Keychain first, then ANTHROPIC_API_KEY. Undefined lets the SDK fall back to an `ant auth login` profile.
+// API key: the workflow's "API key" field, then the macOS Keychain, then ANTHROPIC_API_KEY.
+// Undefined lets the SDK fall back to an `ant auth login` profile.
 function readApiKey() {
+    const configured = (process.env.anthropic_api_key || '').trim();
+    if (configured) return configured;
     try {
         const key = execFileSync('security', ['find-generic-password', '-s', KEYCHAIN_SERVICE, '-w'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
         if (key) return key;
@@ -29,7 +37,48 @@ function readApiKey() {
     return process.env.ANTHROPIC_API_KEY || undefined;
 }
 
-async function rewrite(text, style, instruction) {
+function expandHome(p) {
+    return p.replace(/^~(?=$|\/)/, os.homedir());
+}
+
+// Runs the prompt through the Claude Code CLI (`claude -p`), which uses your Claude subscription login.
+// Tools, MCP servers, settings, CLAUDE.md and session history are all switched off: it only rewrites text.
+function rewriteWithClaudeCode(text, style, instruction) {
+    const claudePath = expandHome((process.env.claude_path || '').trim() || DEFAULT_CLAUDE_PATH);
+    const model = (process.env.model || '').trim() || DEFAULT_CLI_MODEL;
+    const args = ['-p', '--safe-mode', '--model', model, '--effort', process.env.effort || 'low', '--tools', '', '--strict-mcp-config', '--setting-sources', '', '--no-session-persistence', '--output-format', 'json', '--system-prompt', buildSystemPrompt(process.env.personal_instructions)];
+    const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !CLI_ENV_BLOCKLIST.test(name)));
+
+    return new Promise((resolve, reject) => {
+        const child = spawn(claudePath, args, { cwd: os.tmpdir(), env, timeout: 120 * 1000 });
+        let stdout = '';
+        let stderr = '';
+        child.stdout.on('data', chunk => (stdout += chunk));
+        child.stderr.on('data', chunk => (stderr += chunk));
+        child.on('error', error => reject(error.code === 'ENOENT' ? new Error(`Claude Code not found at ${claudePath} — set "Claude Code path" in the workflow config`) : error));
+        child.on('close', code => {
+            let output;
+            try {
+                output = JSON.parse(stdout);
+            } catch {
+                return reject(new Error(stderr.trim() || `Claude Code exited with code ${code}`));
+            }
+            if (output.is_error) {
+                const message = String(output.result || 'Claude Code returned an error');
+                return reject(new Error(/log ?in|auth|401/i.test(message) ? `${message} — run "claude" in a terminal and sign in with your Claude account` : message));
+            }
+            const result = String(output.result || '').trim();
+            return result ? resolve(result) : reject(new Error('Empty response from Claude Code'));
+        });
+        child.stdin.end(buildUserPrompt(text, style, instruction));
+    });
+}
+
+function rewrite(text, style, instruction) {
+    return process.env.backend === 'api' ? rewriteWithApi(text, style, instruction) : rewriteWithClaudeCode(text, style, instruction);
+}
+
+async function rewriteWithApi(text, style, instruction) {
     const model = (process.env.model || '').trim() || DEFAULT_MODEL;
     const client = new Anthropic({ apiKey: readApiKey(), timeout: 120 * 1000 });
 

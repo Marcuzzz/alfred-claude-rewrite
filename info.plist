@@ -406,84 +406,87 @@
 
 Rewrite selected text (or the clipboard) with Claude and paste it back.
 
-* **Hotkey (⌃⌥R)**: select text in any app, press the hotkey, pick a style.
-* **Keyword `rw`**: works on the clipboard. Type a word to filter styles (`rw prof`), or type an instruction (`rw say yes to thursday`) to get a Custom item plus every style with that instruction added.
+* Hotkey: select text in any app, press the hotkey, pick a style. Alfred strips hotkeys on import, so set one (e.g. ⌃⌥R) on the Hotkey trigger.
+* Keyword `rw`: works on the clipboard. Type a word to filter styles (`rw prof`), or type an instruction (`rw say yes to thursday`) to get a Custom item plus every style with that instruction added.
 
-Store your API key in the macOS Keychain once:
+Backend:
 
-    security add-generic-password -a "$USER" -s anthropic-api-key -w
+* Claude subscription (default): uses your installed Claude Code and your Claude plan login. No API key needed. Run `claude` once in a terminal and sign in with your Claude account.
+* Anthropic API key: paste the key in the API key field, or store it in the macOS Keychain instead:
+
+      security add-generic-password -a "$USER" -s anthropic-api-key -w
 </string>
 	<key>uidata</key>
 	<dict>
 		<key>A1C0FFEE-0001-4C1A-9D00-000000000001</key>
 		<dict>
 			<key>xpos</key>
-			<real>30.0</real>
+			<real>30</real>
 			<key>ypos</key>
-			<real>160.0</real>
+			<real>160</real>
 		</dict>
 		<key>A1C0FFEE-0002-4C1A-9D00-000000000002</key>
 		<dict>
 			<key>xpos</key>
-			<real>200.0</real>
+			<real>200</real>
 			<key>ypos</key>
-			<real>190.0</real>
+			<real>190</real>
 		</dict>
 		<key>A1C0FFEE-0003-4C1A-9D00-000000000003</key>
 		<dict>
 			<key>xpos</key>
-			<real>330.0</real>
+			<real>330</real>
 			<key>ypos</key>
-			<real>160.0</real>
+			<real>160</real>
 		</dict>
 		<key>A1C0FFEE-0004-4C1A-9D00-000000000004</key>
 		<dict>
 			<key>xpos</key>
-			<real>530.0</real>
+			<real>530</real>
 			<key>ypos</key>
-			<real>60.0</real>
+			<real>60</real>
 		</dict>
 		<key>A1C0FFEE-0005-4C1A-9D00-000000000005</key>
 		<dict>
 			<key>xpos</key>
-			<real>530.0</real>
+			<real>530</real>
 			<key>ypos</key>
-			<real>160.0</real>
+			<real>160</real>
 		</dict>
 		<key>A1C0FFEE-0006-4C1A-9D00-000000000006</key>
 		<dict>
 			<key>xpos</key>
-			<real>700.0</real>
+			<real>700</real>
 			<key>ypos</key>
-			<real>160.0</real>
+			<real>160</real>
 		</dict>
 		<key>A1C0FFEE-0007-4C1A-9D00-000000000007</key>
 		<dict>
 			<key>xpos</key>
-			<real>900.0</real>
+			<real>900</real>
 			<key>ypos</key>
-			<real>40.0</real>
+			<real>40</real>
 		</dict>
 		<key>A1C0FFEE-0008-4C1A-9D00-000000000008</key>
 		<dict>
 			<key>xpos</key>
-			<real>900.0</real>
+			<real>900</real>
 			<key>ypos</key>
-			<real>160.0</real>
+			<real>160</real>
 		</dict>
 		<key>A1C0FFEE-0009-4C1A-9D00-000000000009</key>
 		<dict>
 			<key>xpos</key>
-			<real>1080.0</real>
+			<real>1080</real>
 			<key>ypos</key>
-			<real>160.0</real>
+			<real>160</real>
 		</dict>
 		<key>A1C0FFEE-0010-4C1A-9D00-000000000010</key>
 		<dict>
 			<key>xpos</key>
-			<real>900.0</real>
+			<real>900</real>
 			<key>ypos</key>
-			<real>290.0</real>
+			<real>290</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
@@ -513,16 +516,84 @@ Store your API key in the macOS Keychain once:
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>claude-opus-5-5</string>
+				<string>claude-code</string>
+				<key>pairs</key>
+				<array>
+					<array>
+						<string>Claude subscription (Claude Code)</string>
+						<string>claude-code</string>
+					</array>
+					<array>
+						<string>Anthropic API key</string>
+						<string>api</string>
+					</array>
+				</array>
+			</dict>
+			<key>description</key>
+			<string>Subscription runs your installed Claude Code (no API key, uses your Claude plan). API uses an Anthropic API key</string>
+			<key>label</key>
+			<string>Backend</string>
+			<key>type</key>
+			<string>popupbutton</string>
+			<key>variable</key>
+			<string>backend</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>~/.local/bin/claude</string>
 				<key>placeholder</key>
-				<string>claude-opus-5-5</string>
+				<string>~/.local/bin/claude</string>
 				<key>required</key>
-				<true/>
+				<false/>
 				<key>trim</key>
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>Claude model ID</string>
+			<string>Subscription only: path to the claude CLI (run `which claude` to find it)</string>
+			<key>label</key>
+			<string>Claude Code path</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>claude_path</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>placeholder</key>
+				<string>sk-ant-…</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>API backend only: sk-ant-… key. Leave empty to use the macOS Keychain entry "anthropic-api-key". Stored in plain text in your Alfred prefs</string>
+			<key>label</key>
+			<string>API key</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>anthropic_api_key</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>placeholder</key>
+				<string>opus / claude-opus-5-5</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Leave empty for the default: "opus" (subscription) or claude-opus-5-5 (API). Aliases like sonnet/haiku work with the subscription</string>
 			<key>label</key>
 			<string>Model</string>
 			<key>type</key>
@@ -604,7 +675,7 @@ Store your API key in the macOS Keychain once:
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>1.0.0</string>
+	<string>1.0.3</string>
 	<key>webaddress</key>
 	<string>https://github.com/Marcuzzz/alfred-claude-rewrite</string>
 </dict>

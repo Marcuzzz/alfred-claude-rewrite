@@ -33,6 +33,10 @@ test('Should_ShowSourcePreview_When_TextIsPresent', () => {
     assert.match(items[0].subtitle, /Clipboard: Hi Jan, kan je/);
 });
 
+test('Should_ForbidEmDashes_When_BuildingSystemPrompt', () => {
+    assert.match(buildSystemPrompt(''), /Never use em dashes/);
+});
+
 test('Should_WrapTextInTags_When_BuildingUserPrompt', () => {
     const prompt = buildUserPrompt(MAIL, 'shorter');
     assert.match(prompt, /^Task: Make the text significantly shorter/);
