@@ -68,3 +68,15 @@ test('Should_TruncateAndFlatten_When_PreviewingLongText', () => {
     assert.ok(result.endsWith('…'));
     assert.doesNotMatch(result, /\n/);
 });
+
+test('Should_OfferExtend_When_QueryMatchesExtend', () => {
+    const { items } = buildStyleItems('ext', 'Gefeliciteerd Thomas', 'Selection');
+    assert.deepEqual(items.map(item => item.arg), ['extend']);
+    assert.match(buildUserPrompt('Gefeliciteerd Thomas', 'extend'), /^Task: Extend the text/);
+});
+
+test('Should_AskForEnglishImageToVideoPrompt_When_StyleIsVideo', () => {
+    const { items } = buildStyleItems('video', 'Na een paar seconden de ogen knipperen.', 'Selection');
+    assert.deepEqual(items.map(item => item.arg), ['video']);
+    assert.match(buildUserPrompt('Na een paar seconden de ogen knipperen.', 'video'), /image-to-video model\. Write it in English/);
+});

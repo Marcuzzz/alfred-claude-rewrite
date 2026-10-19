@@ -3,10 +3,12 @@ const STYLES = [
     { key: 'professional', title: 'Professional', subtitle: 'More formal and businesslike', instruction: 'Rewrite the text in a professional, businesslike tone. Keep it polite and to the point.' },
     { key: 'friendly', title: 'Friendly', subtitle: 'Warmer and more casual', instruction: 'Rewrite the text in a warm, friendly and approachable tone.' },
     { key: 'shorter', title: 'Shorter', subtitle: 'Cut it down, keep the essentials', instruction: 'Make the text significantly shorter. Keep every essential point, drop filler.' },
+    { key: 'extend', title: 'Extend', subtitle: 'Turn a short note into a fuller message, same intent', instruction: 'Extend the text into a fuller, more complete message with the same intent and tone, for example turn a short congratulation into a warm, personal message of a few sentences. Do not invent specific facts such as dates, places, numbers or events that are not in the text.' },
     { key: 'grammar', title: 'Fix spelling & grammar', subtitle: 'Only corrections, nothing else changes', instruction: 'Only fix spelling, grammar and punctuation. Do not change wording, tone or structure otherwise.' },
     { key: 'reply', title: 'Draft reply', subtitle: 'Text is a mail I received — write my reply (type key points after rw)', instruction: 'The text is an email I received. Write my reply to it, in the same language as the email.' },
     { key: 'english', title: 'Translate to English', subtitle: 'Natural English, same tone', instruction: 'Translate the text into natural, fluent English. Keep the tone.' },
-    { key: 'dutch', title: 'Translate to Dutch', subtitle: 'Natuurlijk Nederlands, zelfde toon', instruction: 'Translate the text into natural, fluent Dutch. Keep the tone.' }
+    { key: 'dutch', title: 'Translate to Dutch', subtitle: 'Natuurlijk Nederlands, zelfde toon', instruction: 'Translate the text into natural, fluent Dutch. Keep the tone.' },
+    { key: 'video', title: 'Prompt for Image To Video', subtitle: 'Turn a motion description into an image-to-video prompt', instruction: 'The text describes what should happen in a video generated from a still image. Turn it into a prompt for an image-to-video model. Write it in English, even if the text is in another language. Describe the motion of the subject, its timing and order, and any camera movement, in short, concrete, present-tense sentences. Do not describe the contents of the image itself, since the model already sees it. Keep the motion subtle and natural unless the text asks otherwise. Output only the prompt, as one paragraph.' }
 ];
 
 const SYSTEM_PROMPT = [

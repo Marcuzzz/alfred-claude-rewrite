@@ -9,7 +9,10 @@ Rewrite selected text (usually an email) with Claude and paste the result back i
   - `rw prof` filters the styles (→ *Professional*)
   - `rw say yes to thursday, ask for the agenda` gives a **Custom** item, plus every style with that instruction added (e.g. *Draft reply + "say yes…"*)
 
-Styles: Improve, Professional, Friendly, Shorter, Fix spelling & grammar, Draft reply, Translate to English, Translate to Dutch.
+Styles: Improve, Professional, Friendly, Shorter, Extend, Fix spelling & grammar, Draft reply, Translate to English, Translate to Dutch, Prompt for Image To Video.
+
+- **Extend** turns a short note ("Gefeliciteerd Thomas") into a fuller message without inventing facts.
+- **Prompt for Image To Video** turns a motion description ("na een paar seconden de ogen knipperen, daarna de kop naar links") into an English prompt for an image-to-video model.
 
 Each item's subtitle shows where the text came from (`Selection:` or `Clipboard:`), so you can tell what will be rewritten.
 
