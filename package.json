@@ -1,6 +1,6 @@
 {
   "name": "claude-rewrite",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "productName": "claude-rewrite",
   "description": "Rewrite selected text or the clipboard with Claude from Alfred",
   "license": "ISC",
