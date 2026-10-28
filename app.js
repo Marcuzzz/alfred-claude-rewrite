@@ -46,7 +46,7 @@ function expandHome(p) {
 function rewriteWithClaudeCode(text, style, instruction) {
     const claudePath = expandHome((process.env.claude_path || '').trim() || DEFAULT_CLAUDE_PATH);
     const model = (process.env.model || '').trim() || DEFAULT_CLI_MODEL;
-    const args = ['-p', '--safe-mode', '--model', model, '--effort', process.env.effort || 'low', '--tools', '', '--strict-mcp-config', '--setting-sources', '', '--no-session-persistence', '--output-format', 'json', '--system-prompt', buildSystemPrompt(process.env.personal_instructions)];
+    const args = ['-p', '--safe-mode', '--model', model, '--effort', process.env.effort || 'low', '--tools', '', '--strict-mcp-config', '--setting-sources', '', '--no-session-persistence', '--output-format', 'json', '--system-prompt', buildSystemPrompt(process.env.personal_instructions, style)];
     const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !CLI_ENV_BLOCKLIST.test(name)));
 
     return new Promise((resolve, reject) => {
@@ -86,7 +86,7 @@ async function rewriteWithApi(text, style, instruction) {
         model,
         max_tokens: 16000,
         output_config: { effort: process.env.effort || 'low' },
-        system: buildSystemPrompt(process.env.personal_instructions),
+        system: buildSystemPrompt(process.env.personal_instructions, style),
         messages: [{ role: 'user', content: buildUserPrompt(text, style, instruction) }]
     };
     if (FALLBACK_MODELS.includes(model)) {
@@ -136,7 +136,10 @@ async function main() {
             const result = await rewrite(text, process.env.style, process.env.instruction);
             process.stdout.write(alfredResult(result, { status: 'ok', message: 'Rewritten text ready' }));
         } catch (error) {
-            process.stdout.write(alfredResult('', { status: 'error', message: describeError(error) }));
+            const message = describeError(error);
+            // stderr shows up in Alfred's debugger, even when notifications are off.
+            process.stderr.write(`Rewrite failed: ${message}\n`);
+            process.stdout.write(alfredResult('', { status: 'error', message }));
         }
         return;
     }

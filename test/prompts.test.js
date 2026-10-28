@@ -1,6 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { STYLES, buildStyleItems, buildSystemPrompt, buildUserPrompt, preview } = require('../prompts');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { STYLES, buildStyleItems, buildSystemPrompt, buildUserPrompt, preview, loadStyles, parsePromptFile, styleKeyFromFile } = require('../prompts');
 
 const MAIL = 'Hi Jan,\n\nkan je de factuur nog sturen?\n\nGroet, Marc';
 
@@ -79,4 +82,59 @@ test('Should_AskForEnglishImageToVideoPrompt_When_StyleIsVideo', () => {
     const { items } = buildStyleItems('video', 'Na een paar seconden de ogen knipperen.', 'Selection');
     assert.deepEqual(items.map(item => item.arg), ['video']);
     assert.match(buildUserPrompt('Na een paar seconden de ogen knipperen.', 'video'), /image-to-video model\. Write it in English/);
+});
+
+test('Should_AllowMarkdownOutput_When_StyleIsMarkdown', () => {
+    assert.match(buildSystemPrompt('', 'markdown'), /Markdown source/);
+    assert.doesNotMatch(buildSystemPrompt('', 'markdown'), /no markdown formatting/);
+    assert.match(buildSystemPrompt('', 'improve'), /no markdown formatting/);
+    assert.match(buildSystemPrompt('', 'custom'), /no markdown formatting/);
+});
+
+test('Should_AskToReviewHeadings_When_StyleIsMarkdown', () => {
+    const { items } = buildStyleItems('markdown', '# Notes\n\nsome text', 'Selection');
+    assert.deepEqual(items.map(item => item.arg), ['markdown', 'markdown-images']);
+    assert.match(buildUserPrompt('# Notes', 'markdown'), /judge the heading structure/);
+});
+
+test('Should_KeepImagesAndCleanUp_When_StyleIsMarkdownImages', () => {
+    const prompt = buildUserPrompt('![](img/step1.png)', 'markdown-images');
+    assert.match(prompt, /judge the heading structure/);
+    assert.match(prompt, /Keep every image and never change its path/);
+    assert.match(buildSystemPrompt('', 'markdown-images'), /Markdown source/);
+    assert.doesNotMatch(buildUserPrompt('# Notes', 'markdown'), /images/);
+});
+
+function promptsDir(files) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rewrite-prompts-'));
+    for (const [name, content] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), content);
+    return dir;
+}
+
+test('Should_ReadFrontMatterAndBody_When_ParsingPromptFile', () => {
+    const { meta, body } = parsePromptFile('---\ntitle: "Poem"\nmarkdown: true\n---\n\n<!-- note -->\nMake it rhyme.\n');
+    assert.deepEqual(meta, { title: 'Poem', markdown: 'true' });
+    assert.equal(body, 'Make it rhyme.');
+});
+
+test('Should_StripOrderPrefix_When_DerivingKeyFromFilename', () => {
+    assert.equal(styleKeyFromFile('10-markdown.md'), 'markdown');
+    assert.equal(styleKeyFromFile('poem.md'), 'poem');
+});
+
+test('Should_AddStyleInNumericOrder_When_MarkdownFileIsAdded', () => {
+    const dir = promptsDir({ '10-b.md': '---\ntitle: B\n---\nDo B.', '2-a.md': '---\ntitle: A\nsubtitle: First\n---\nDo A.', 'notes.txt': 'ignored', '3-empty.md': '---\ntitle: Empty\n---\n' });
+    assert.deepEqual(loadStyles(dir), [
+        { key: 'a', title: 'A', subtitle: 'First', markdown: false, instruction: 'Do A.' },
+        { key: 'b', title: 'B', subtitle: '', markdown: false, instruction: 'Do B.' }
+    ]);
+});
+
+test('Should_PrependBaseInstruction_When_StyleExtendsAnother', () => {
+    const dir = promptsDir({ '1-base.md': 'Base rules.', '2-more.md': '---\nextends: base\n---\nMore rules.' });
+    assert.equal(loadStyles(dir)[1].instruction, 'Base rules.\n\nMore rules.');
+});
+
+test('Should_Throw_When_StyleExtendsUnknownStyle', () => {
+    assert.throws(() => loadStyles(promptsDir({ 'x.md': '---\nextends: nope\n---\nX.' })), /x\.md: extends unknown style "nope"/);
 });

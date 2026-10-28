@@ -9,12 +9,34 @@ Rewrite selected text (usually an email) with Claude and paste the result back i
   - `rw prof` filters the styles (→ *Professional*)
   - `rw say yes to thursday, ask for the agenda` gives a **Custom** item, plus every style with that instruction added (e.g. *Draft reply + "say yes…"*)
 
-Styles: Improve, Professional, Friendly, Shorter, Extend, Fix spelling & grammar, Draft reply, Translate to English, Translate to Dutch, Prompt for Image To Video.
+Styles: Improve, Professional, Friendly, Shorter, Extend, Fix spelling & grammar, Draft reply, Translate to English, Translate to Dutch, Clean up Markdown, Clean up Markdown with images, Prompt for Image To Video.
 
 - **Extend** turns a short note ("Gefeliciteerd Thomas") into a fuller message without inventing facts.
+- **Clean up Markdown** tidies Markdown formatting, improves the wording and adds, merges or relevels headings where the structure calls for it. Code blocks, links and front matter are left alone, and the result is returned as Markdown.
+- **Clean up Markdown with images** does the same and also keeps every image, writes alt text and moves images next to the text they belong to. Claude only sees the image references (path, alt text, surrounding text), not the pictures themselves.
 - **Prompt for Image To Video** turns a motion description ("na een paar seconden de ogen knipperen, daarna de kop naar links") into an English prompt for an image-to-video model.
 
 Each item's subtitle shows where the text came from (`Selection:` or `Clipboard:`), so you can tell what will be rewritten.
+
+## Adding or editing styles
+
+Each style is a Markdown file in [`prompts/`](prompts/). Add a file and it shows up as a new option, no rebuild needed:
+
+```markdown
+---
+title: Rhyme
+subtitle: Turn it into a short poem
+---
+
+Rewrite the text as a short rhyming poem.
+```
+
+- The body is the instruction sent to Claude. Lists and paragraphs are fine. `<!-- comments -->` are notes for yourself and are not sent.
+- The filename sets the order and the style key: `13-rhyme.md` comes after `12-…` and has key `rhyme`.
+- `markdown: true` lets the result be Markdown. Without it, Claude returns plain text ready for an email.
+- `extends: markdown` puts that style's instruction in front of this one (see `11-markdown-images.md`).
+
+In the installed workflow the folder sits next to the `claude-rewrite` binary (*Open in Finder* on the workflow). Installing a new release replaces it, so add new styles to this repo and release them, or copy your own files back after updating.
 
 ## Setup
 
